@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>إدارة الحجوزات والعملاء</title>
+    <!-- خطوط جوجل لمظهر احترافي ومقروئية فائقة -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- المتغيرات والتصميم العام (Dark Luxury Theme) --- */
+        :root {
+            --bg-dark: #0f0f12;
+            --bg-card: #18181f;
+            --bg-input: #22222e;
+            --text-main: #ffffff;
+            --text-muted: #a0a0b0;
+            --primary: #cf6679;
+            --primary-hover: #b05061;
+            --accent: #03dac6;
+            --accent-hover: #02bdae;
+            --success: #4caf50;
+            --danger: #f44336;
+            --warning: #ff9800;
+            --border-color: #2a2a3a;
+            --gold: #ffd700;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        /* منع التمرير الأفقي تماماً وحل مشكلة الفراغ الجانبي */
+        html, body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-size: 14px;
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        body {
+            padding: 12px;
+            line-height: 1.5;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 4px;
+        }
+
+        /* لوحة علوية للبرنامج */
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #18181f, #22222e);
+            padding: 20px 15px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        header h1 {
+            color: var(--accent);
+            font-size: 2.1rem;
+            margin-bottom: 4px;
+            font-weight: 800;
+            text-shadow: 0 4px 15px rgba(3, 218, 198, 0.2);
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 300;
+        }
+
+        /* --- شريط التبويبات العلوي (Tabs) --- */
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .tab-btn {
+            flex: 1;
+            max-width: 200px;
+            background-color: var(--bg-card);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 10px 5px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            box-shadow: 0 4px 15px rgba(3, 218, 198, 0.3);
+        }
+
+        /* --- محتوى التبويبات --- */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out forwards;
+            width: 100%;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* الكروت والتصميم الزجاجي */
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            margin-bottom: 15px;
+            color: var(--accent);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* --- كروت الإحصائيات (Dashboard Stats) --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1d1d26, #18181f);
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .stat-card.blue::before { background-color: var(--accent); }
+        .stat-card.green::before { background-color: var(--success); }
+        .stat-card.orange::before { background-color: var(--warning); }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .stat-value span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 4px;
+            background-color: var(--bg-input);
+            border-radius: 10px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--success);
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        .progress-text {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* --- أدوات النسخ الاحتياطي المدمجة --- */
+        .backup-section {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            background-color: rgba(255, 255, 255, 0.02);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px dashed var(--border-color);
+        }
+
+        .backup-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            background-color: var(--bg-input);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .backup-btn:hover {
+            border-color: var(--accent);
+        }
+
+        /* --- نموذج المدخلات (Form) --- */
+        .form-max-width {
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            background-color: rgba(3, 218, 198, 0.02);
+        }
+
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            height: 80px;
+        }
+
+        /* الأزرار */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .btn-accent {
+            background-color: var(--accent);
+            color: #000;
+        }
+
+        .btn-accent:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-cancel {
+            background-color: #3a3a4a;
+            color: #fff;
+            margin-top: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* --- شريط البحث والتصفية --- */
+        .search-filter-row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .search-wrapper {
+            width: 100%;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .filter-btn {
+            background-color: var(--bg-input);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .filter-btn.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            background-color: rgba(3, 218, 198, 0.05);
+        }
+
+        /* --- تصميم القائمة المطورة (Accordion View) --- */
+        .client-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .client-item {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
+
+        /* الجزء الرئيسي الظاهر دائماً */
+        .client-header {
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .client-header:hover {
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .client-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .client-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .client-date {
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .client-status-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* سهم يوضح إمكانية الفتح */
+        .arrow-icon {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            transition: transform 0.25s ease;
+        }
+
+        .client-item.open .arrow-icon {
+            transform: rotate(180deg);
+        }
+
+        /* الجزء المخفي الذي يظهر عند الضغط فقط */
+        .client-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: rgba(0, 0, 0, 0.15);
+            border-top: 1px dashed transparent;
+        }
+
+        .client-item.open .client-details {
+            max-height: 500px; /* يعطي مساحة للتمدد */
+            border-top-color: var(--border-color);
+        }
+
+        .details-grid {
+            padding: 12px 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+
+        .detail-row-full {
+            grid-column: span 2;
+        }
+
+        .detail-label {
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .detail-value {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        /* شارات ملونة */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .badge-success { background-color: rgba(76, 175, 80, 0.15); color: var(--success); border: 1px solid var(--success); }
+        .badge-danger { background-color: rgba(244, 67, 54, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+
+        .session-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .session-type-wedding { background-color: rgba(207, 102, 121, 0.15); color: #ff8a9a; border-color: rgba(207, 102, 121, 0.3); }
+        .session-type-henna { background-color: rgba(255, 152, 0, 0.15); color: #ffb74d; border-color: rgba(255, 152, 0, 0.3); }
+        .session-type-both { background-color: rgba(3, 218, 198, 0.15); color: #80f2e6; border-color: rgba(3, 218, 198, 0.3); }
+        .session-type-engagement { background-color: rgba(156, 39, 176, 0.15); color: #e040fb; border-color: rgba(156, 39, 176, 0.3); }
+        .session-type-katb { background-color: rgba(33, 150, 243, 0.15); color: #64b5f6; border-color: rgba(33, 150, 243, 0.3); }
+        .session-type-other { background-color: rgba(158, 158, 158, 0.15); color: #e0e0e0; border-color: rgba(158, 158, 158, 0.3); }
+
+        /* أزرار العمليات داخل التفاصيل */
+        .action-container {
+            grid-column: span 2;
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .btn-edit {
+            background-color: rgba(255, 152, 0, 0.12);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .btn-edit:hover { background-color: var(--warning); color: #000; }
+
+        .btn-delete {
+            background-color: rgba(244, 67, 54, 0.12);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .btn-delete:hover { background-color: var(--danger); color: #fff; }
+
+        .status-message {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- لوحة علوية للبرنامج -->
+        <header>
+            <h1 id="appHeaderTitle">برنامج إدارة الحجوزات 📸</h1>
+            <p id="appHeaderSubtitle">نظام ذكي محلي لحفظ وتنظيم المواعيد على جهازك مباشرة</p>
+        </header>
+
+        <!-- أزرار التبويب العلوية -->
+        <div class="tabs-container">
+            <button class="tab-btn active" id="formTabBtn" onclick="switchTab('add-tab', this)">
+                <span>📝</span> إضافة حجز جديد
+            </button>
+            <button class="tab-btn" id="listTabBtn" onclick="switchTab('bookings-tab', this)">
+                <span>📋</span> جدول الحجوزات
+            </button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- التبويب الأول (الافتراضي): إضافة حجز جديد -->
+        <!-- ========================================== -->
+        <div id="add-tab" class="tab-content active">
+            <div class="card form-max-width">
+                <h2 class="card-title" id="formTitle">📝 إضافة حجز جديد</h2>
+                <form id="clientForm">
+                    <input type="hidden" id="clientId">
+
+                    <div class="form-group">
+                        <label for="clientName">اسم العميل (أو العميلة)</label>
+                        <input type="text" id="clientName" class="form-control" placeholder="اسم العميل الثلاثي" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clientPhone">رقم الهاتف للتواصل</label>
+                        <input type="tel" id="clientPhone" class="form-control" placeholder="01xxxxxxxxx" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sessionType">نوع جلسة التصوير (السيشن)</label>
+                        <select id="sessionType" class="form-control" required>
+                            <option value="" disabled selected>اختر نوع السيشن...</option>
+                            <option value="دخلة">دخلة 👰🤵</option>
+                            <option value="حنة">حنة 💅</option>
+                            <option value="دخلة وحنة معاً">دخلة وحنة معاً 📆</option>
+                            <option value="خطوبة">خطوبة 💍</option>
+                            <option value="كتب كتاب">كتب كتاب ✒️</option>
+                            <option value="أخرى">أخرى (اكتبها بالأسفل) 📝</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="customSessionGroup" style="display: none;">
+                        <label for="customSessionText">اكتب نوع السيشن المخصص</label>
+                        <input type="text" id="customSessionText" class="form-control" placeholder="سيشن تخرج، عيد ميلاد، تصوير شخصي...">
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="totalAmount">المبلغ المتفق عليه</label>
+                            <input type="number" id="totalAmount" class="form-control" min="0" placeholder="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="paidAmount">المبلغ المدفوع (المقدم)</label>
+                            <input type="number" id="paidAmount" class="form-control" min="0" placeholder="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="remainingAmount">المبلغ المتبقي للتحصيل (تلقائي)</label>
+                        <input type="number" id="remainingAmount" class="form-control" placeholder="0" readonly style="background-color: rgba(255,255,255,0.03); color: var(--warning); font-weight: bold;">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deliveryDate">تاريخ وموعد المناسبة</label>
+                        <input type="datetime-local" id="deliveryDate" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deliveryStatus">حالة تسليم السيشن</label>
+                        <select id="deliveryStatus" class="form-control">
+                            <option value="لم يتم التسليم بعد">لم يتم التسليم بعد</option>
+                            <option value="تم تسليم السيشن">تم تسليم السيشن</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">ملاحظات إضافية</label>
+                        <textarea id="notes" class="form-control" placeholder="اكتب تفاصيل ومكان جلسة التصوير هنا..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-accent" id="submitBtn">حفظ وتأكيد الحجز على الجهاز</button>
+                    <button type="button" class="btn btn-cancel" id="cancelEditBtn" style="display: none;">إلغاء وإعادة تعيين</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- التبويب الثاني: جدول وعرض الحجوزات (أوفلاين) -->
+        <!-- ========================================== -->
+        <div id="bookings-tab" class="tab-content">
+            
+            <!-- لوحة الإحصائيات الفوقية الذكية -->
+            <div class="stats-grid">
+                <div class="stat-card blue">
+                    <div class="stat-label">👥 إجمالي الحجوزات</div>
+                    <div class="stat-value" id="statTotalBookings">0 <span>حجز</span></div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-label">💰 إجمالي المحصل</div>
+                    <div class="stat-value" id="statTotalPaid">0 <span>ج.م</span></div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="paidProgressBar"></div>
+                    </div>
+                    <div class="progress-text" id="progressPercentage">0%</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-label">⏳ المتبقي الكلي</div>
+                    <div class="stat-value" id="statTotalRemaining">0 <span>ج.م</span></div>
+                </div>
+            </div>
+
+            <!-- لوحة النسخ الاحتياطي (هامة جداً للعمل الأوفلاين) -->
+            <div class="backup-section">
+                <button class="backup-btn" onclick="exportData()">📤 حفظ نسخة احتياطية من البيانات</button>
+                <button class="backup-btn" onclick="document.getElementById('importFile').click()">📥 استعادة نسخة احتياطية</button>
+                <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importData(event)">
+            </div>
+
+            <!-- شريط البحث السريع والفلترة -->
+            <div class="card">
+                <div class="search-filter-row">
+                    <div class="search-wrapper">
+                        <input type="text" id="searchInput" class="form-control" placeholder="🔍 ابحث بالاسم أو الهاتف...">
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" onclick="filterStatus('all', this)">الكل</button>
+                        <button class="filter-btn" onclick="filterStatus('لم يتم التسليم بعد', this)">⏳ لم يتم التسليم</button>
+                        <button class="filter-btn" onclick="filterStatus('تم تسليم السيشن', this)">✅ تم التسليم</button>
+                    </div>
+                </div>
+
+                <!-- قائمة العملاء المطورة (Accordion View) -->
+                <div class="client-list" id="clientsListContainer">
+                    <!-- سيتم بناء الكروت برمجياً هنا -->
+                </div>
+
+                <div id="statusMessage" class="status-message">
+                    جاري تحميل البيانات من ذاكرة الهاتف...
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- كود التشغيل أوفلاين (LocalStorage) بالكامل -->
+    <script>
+        // عناصر الواجهة
+        const clientForm = document.getElementById('clientForm');
+        const clientIdInput = document.getElementById('clientId');
+        const clientNameInput = document.getElementById('clientName');
+        const clientPhoneInput = document.getElementById('clientPhone');
+        const sessionTypeSelect = document.getElementById('sessionType');
+        const customSessionGroup = document.getElementById('customSessionGroup');
+        const customSessionTextInput = document.getElementById('customSessionText');
+        const totalAmountInput = document.getElementById('totalAmount');
+        const paidAmountInput = document.getElementById('paidAmount');
+        const remainingAmountInput = document.getElementById('remainingAmount');
+        const deliveryDateInput = document.getElementById('deliveryDate');
+        const deliveryStatusSelect = document.getElementById('deliveryStatus');
+        const notesInput = document.getElementById('notes');
+        const submitBtn = document.getElementById('submitBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const formTitle = document.getElementById('formTitle');
+        const searchInput = document.getElementById('searchInput');
+        const clientsListContainer = document.getElementById('clientsListContainer');
+        const statusMessage = document.getElementById('statusMessage');
+
+        const statTotalBookings = document.getElementById('statTotalBookings');
+        const statTotalPaid = document.getElementById('statTotalPaid');
+        const statTotalRemaining = document.getElementById('statTotalRemaining');
+        const paidProgressBar = document.getElementById('paidProgressBar');
+        const progressPercentage = document.getElementById('progressPercentage');
+
+        let allClients = [];
+        let isEditMode = false;
+        let currentFilter = 'all';
+
+        // التنقل بين التبويبات
+        window.switchTab = function(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+
+            if (tabId === 'add-tab' && !isEditMode) {
+                resetForm();
+            }
+        };
+
+        window.filterStatus = function(status, btn) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(button => {
+                button.classList.remove('active');
+            });
+            btn.classList.add('active');
+            renderClients(allClients);
+        };
+
+        sessionTypeSelect.addEventListener('change', function() {
+            if (this.value === 'أخرى') {
+                customSessionGroup.style.display = 'block';
+                customSessionTextInput.setAttribute('required', 'required');
+            } else {
+                customSessionGroup.style.display = 'none';
+                customSessionTextInput.removeAttribute('required');
+                customSessionTextInput.value = '';
+            }
+        });
+
+        function calculateRemaining() {
+            const total = parseFloat(totalAmountInput.value) || 0;
+            const paid = parseFloat(paidAmountInput.value) || 0;
+            remainingAmountInput.value = total - paid;
+        }
+        totalAmountInput.addEventListener('input', calculateRemaining);
+        paidAmountInput.addEventListener('input', calculateRemaining);
+
+        // تحميل البيانات من الـ LocalStorage أول ما البرنامج يفتح
+        function loadLocalData() {
+            try {
+                const savedData = localStorage.getItem('local_bookings_data');
+                if (savedData) {
+                    allClients = JSON.parse(savedData);
+                } else {
+                    allClients = [];
+                }
+                
+                // ترتيب الحجوزات: الأقدم تاريخاً يظهر أولاً
+                allClients.sort((a, b) => new Date(a.deliveryDate) - new Date(b.deliveryDate));
+
+                updateDashboard(allClients);
+                renderClients(allClients);
+            } catch (err) {
+                console.error("خطأ أثناء قراءة الذاكرة المحلية:", err);
+                statusMessage.innerHTML = "❌ فشل قراءة البيانات من الجهاز.";
+            }
+        }
+
+        // حفظ البيانات في الـ LocalStorage
+        function saveLocalData() {
+            localStorage.setItem('local_bookings_data', JSON.stringify(allClients));
+            updateDashboard(allClients);
+            renderClients(allClients);
+        }
+
+        function updateDashboard(data) {
+            const totalBookingsCount = data.length;
+            let totalPaidSum = 0;
+            let totalRemainingSum = 0;
+            let totalBudgetSum = 0;
+
+            data.forEach(client => {
+                totalPaidSum += parseFloat(client.paid) || 0;
+                totalRemainingSum += parseFloat(client.remaining) || 0;
+                totalBudgetSum += parseFloat(client.total) || 0;
+            });
+
+            statTotalBookings.innerHTML = `${totalBookingsCount} <span>حجز</span>`;
+            statTotalPaid.innerHTML = `${totalPaidSum.toLocaleString('ar-EG')} <span>ج.م</span>`;
+            statTotalRemaining.innerHTML = `${totalRemainingSum.toLocaleString('ar-EG')} <span>ج.م</span>`;
+
+            let paidPercent = 0;
+            if (totalBudgetSum > 0) {
+                paidPercent = Math.round((totalPaidSum / totalBudgetSum) * 100);
+            }
+            paidProgressBar.style.width = `${paidPercent}%`;
+            progressPercentage.textContent = `${paidPercent}% من الإجمالي (${totalBudgetSum.toLocaleString('ar-EG')} ج.م)`;
+        }
+
+        // دالة بناء قائمة العملاء
+        function renderClients(dataToRender) {
+            clientsListContainer.innerHTML = '';
+            
+            const term = searchInput.value.toLowerCase().trim();
+            let filtered = dataToRender.filter(client => 
+                client.name.toLowerCase().includes(term) || client.phone.includes(term)
+            );
+
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(client => client.status === currentFilter);
+            }
+
+            if (filtered.length === 0) {
+                statusMessage.style.display = 'block';
+                statusMessage.textContent = "لا توجد حجوزات مسجلة حالياً.";
+                return;
+            } else {
+                statusMessage.style.display = 'none';
+            }
+
+            filtered.forEach(client => {
+                const clientItem = document.createElement('div');
+                clientItem.className = 'client-item';
+
+                const statusBadgeClass = client.status === 'تم تسليم السيشن' ? 'badge-success' : 'badge-danger';
+                
+                let sessionClass = 'session-type-other';
+                if (client.sessionType === 'دخلة') sessionClass = 'session-type-wedding';
+                else if (client.sessionType === 'حنة') sessionClass = 'session-type-henna';
+                else if (client.sessionType === 'دخلة وحنة معاً') sessionClass = 'session-type-both';
+                else if (client.sessionType === 'خطوبة') sessionClass = 'session-type-engagement';
+                else if (client.sessionType === 'كتب كتاب') sessionClass = 'session-type-katb';
+
+                const displaySessionType = client.sessionType === 'أخرى' ? client.customSessionType : client.sessionType;
+
+                const formattedDate = new Date(client.deliveryDate).toLocaleString('ar-EG', {
+                    year: 'numeric', month: 'numeric', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+
+                clientItem.innerHTML = `
+                    <div class="client-header">
+                        <div class="client-meta">
+                            <span class="client-title">${client.name}</span>
+                            <span class="client-date">📅 ${formattedDate}</span>
+                        </div>
+                        <div class="client-status-area">
+                            <span class="badge ${statusBadgeClass}">${client.status === 'تم تسليم السيشن' ? 'تم التسليم' : 'قيد الانتظار'}</span>
+                            <span class="arrow-icon">▼</span>
+                        </div>
+                    </div>
+                    <div class="client-details">
+                        <div class="details-grid">
+                            <div>
+                                <div class="detail-label">رقم الهاتف:</div>
+                                <div class="detail-value" style="direction: ltr; text-align: right;">${client.phone}</div>
+                            </div>
+                            <div>
+                                <div class="detail-label">نوع السيشن:</div>
+                                <div class="detail-value"><span class="session-badge ${sessionClass}">${displaySessionType || 'غير محدد'}</span></div>
+                            </div>
+                            <div>
+                                <div class="detail-label">الحساب الكلي:</div>
+                                <div class="detail-value">${client.total} ج.م</div>
+                            </div>
+                            <div>
+                                <div class="detail-label">المدفوع (المقدم):</div>
+                                <div class="detail-value" style="color: var(--success);">${client.paid} ج.م</div>
+                            </div>
+                            <div>
+                                <div class="detail-label">المتبقي المطلوب:</div>
+                                <div class="detail-value" style="color: ${client.remaining > 0 ? 'var(--warning)' : 'var(--success)'};">
+                                    ${client.remaining} ج.م
+                                </div>
+                            </div>
+                            <div>
+                                <div class="detail-label">الحالة بالتفصيل:</div>
+                                <div class="detail-value">${client.status}</div>
+                            </div>
+                            <div class="detail-row-full">
+                                <div class="detail-label">الملاحظات وتفاصيل المكان:</div>
+                                <div class="detail-value" style="font-weight: normal; color: var(--text-muted);">${client.notes || 'لا توجد ملاحظات.'}</div>
+                            </div>
+                            <div class="action-container">
+                                <button class="btn-action btn-edit" data-id="${client.id}">⚙️ تعديل البيانات</button>
+                                <button class="btn-action btn-delete" data-id="${client.id}">🗑️ حذف الحجز</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // حدث الفتح والغلق عند الضغط
+                const header = clientItem.querySelector('.client-header');
+                header.addEventListener('click', () => {
+                    const isOpen = clientItem.classList.contains('open');
+                    
+                    document.querySelectorAll('.client-item').forEach(item => {
+                        item.classList.remove('open');
+                    });
+
+                    if (!isOpen) {
+                        clientItem.classList.add('open');
+                    }
+                });
+
+                clientsListContainer.appendChild(clientItem);
+            });
+
+            // ربط أزرار التعديل والحذف
+            document.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    startEditClient(btn.dataset.id);
+                });
+            });
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteClient(btn.dataset.id);
+                });
+            });
+        }
+
+        // حفظ / تعديل حجز
+        clientForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const clientData = {
+                id: isEditMode ? clientIdInput.value : 'id_' + Date.now(),
+                name: clientNameInput.value.trim(),
+                phone: clientPhoneInput.value.trim(),
+                sessionType: sessionTypeSelect.value,
+                customSessionType: sessionTypeSelect.value === 'أخرى' ? customSessionTextInput.value.trim() : '',
+                total: parseFloat(totalAmountInput.value) || 0,
+                paid: parseFloat(paidAmountInput.value) || 0,
+                remaining: parseFloat(remainingAmountInput.value) || 0,
+                deliveryDate: deliveryDateInput.value,
+                status: deliveryStatusSelect.value,
+                notes: notesInput.value.trim(),
+                createdAt: isEditMode ? allClients.find(c => c.id === clientIdInput.value).createdAt : new Date().toISOString()
+            };
+
+            if (isEditMode) {
+                // استبدال القديم بالجديد
+                allClients = allClients.map(c => c.id === clientData.id ? clientData : c);
+                resetForm();
+            } else {
+                // إضافة جديد
+                allClients.push(clientData);
+            }
+
+            // ترتيب وفرز
+            allClients.sort((a, b) => new Date(a.deliveryDate) - new Date(b.deliveryDate));
+
+            saveLocalData();
+            clientForm.reset();
+            customSessionGroup.style.display = 'none';
+            customSessionTextInput.removeAttribute('required');
+            calculateRemaining();
+
+            // التنقل لجدول الحجوزات
+            switchTab('bookings-tab', document.getElementById('listTabBtn'));
+        });
+
+        function startEditClient(id) {
+            const client = allClients.find(c => c.id === id);
+            if (!client) return;
+
+            isEditMode = true;
+            formTitle.textContent = "📝 تعديل تفاصيل الحجز";
+            submitBtn.textContent = "تحديث البيانات وحفظها";
+            submitBtn.style.backgroundColor = "var(--warning)";
+            submitBtn.style.color = "#000";
+            cancelEditBtn.style.display = 'block';
+
+            clientIdInput.value = client.id;
+            clientNameInput.value = client.name;
+            clientPhoneInput.value = client.phone;
+            
+            sessionTypeSelect.value = client.sessionType || '';
+            if (client.sessionType === 'أخرى') {
+                customSessionGroup.style.display = 'block';
+                customSessionTextInput.value = client.customSessionType || '';
+                customSessionTextInput.setAttribute('required', 'required');
+            } else {
+                customSessionGroup.style.display = 'none';
+                customSessionTextInput.value = '';
+                customSessionTextInput.removeAttribute('required');
+            }
+
+            totalAmountInput.value = client.total;
+            paidAmountInput.value = client.paid;
+            remainingAmountInput.value = client.remaining;
+            deliveryDateInput.value = client.deliveryDate;
+            deliveryStatusSelect.value = client.status;
+            notesInput.value = client.notes;
+
+            switchTab('add-tab', document.getElementById('formTabBtn'));
+        }
+
+        cancelEditBtn.addEventListener('click', resetForm);
+
+        function resetForm() {
+            isEditMode = false;
+            formTitle.textContent = "📝 إضافة حجز جديد";
+            submitBtn.textContent = "حفظ وتأكيد الحجز على الجهاز";
+            submitBtn.style.backgroundColor = "var(--accent)";
+            submitBtn.style.color = "#000";
+            cancelEditBtn.style.display = 'none';
+            clientForm.reset();
+            clientIdInput.value = '';
+            customSessionGroup.style.display = 'none';
+            customSessionTextInput.removeAttribute('required');
+            calculateRemaining();
+        }
+
+        function deleteClient(id) {
+            const client = allClients.find(c => c.id === id);
+            if (!client) return;
+
+            const confirmDelete = confirm(`⚠️ هل أنت متأكد من رغبتك في حذف حجز العميل "${client.name}" بالكامل من الجهاز؟`);
+            if (confirmDelete) {
+                allClients = allClients.filter(c => c.id !== id);
+                saveLocalData();
+                if (isEditMode && clientIdInput.value === id) {
+                    resetForm();
+                }
+            }
+        }
+
+        // ==========================================
+        // وظائف تصدير واستعادة البيانات (النسخ الاحتياطي)
+        // ==========================================
+        window.exportData = function() {
+            if (allClients.length === 0) {
+                alert("لا توجد حجوزات لحفظها حالياً!");
+                return;
+            }
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allClients, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `نسخة_احتياطية_الحجوزات_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        };
+
+        window.importData = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (Array.isArray(importedData)) {
+                        const confirmImport = confirm(`⚠️ سيتم استيراد ${importedData.length} حجز ودمجهم مع الحجوزات الحالية على هذا الجهاز. هل تود الاستمرار؟`);
+                        if (confirmImport) {
+                            // دمج مع منع تكرار نفس المعرّف (ID)
+                            const existingIds = new Set(allClients.map(c => c.id));
+                            importedData.forEach(item => {
+                                if (!existingIds.has(item.id)) {
+                                    allClients.push(item);
+                                }
+                            });
+                            
+                            allClients.sort((a, b) => new Date(a.deliveryDate) - new Date(b.deliveryDate));
+                            saveLocalData();
+                            alert("✅ تم استيراد الحجوزات بنجاح ومزامنتها مع جهازك!");
+                        }
+                    } else {
+                        alert("ملف غير صالح. تأكد من رفع ملف النسخ الاحتياطي الصحيح.");
+                    }
+                } catch (err) {
+                    alert("حدث خطأ أثناء قراءة الملف.");
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        searchInput.addEventListener('input', () => {
+            renderClients(allClients);
+        });
+
+        // تشغيل التحميل عند فتح التطبيق
+        window.onload = loadLocalData;
+    </script>
+</body>
+</html>
