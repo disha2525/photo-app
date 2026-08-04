@@ -9,6 +9,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- مكتبة html2canvas لتوليد وتصدير الإيصالات كصور JPG -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         /* --- المتغيرات والتصميم العام (Dark Luxury Theme) --- */
         :root {
@@ -394,7 +397,6 @@
             transition: all 0.25s ease;
         }
 
-        /* الجزء الرئيسي الظاهر دائماً */
         .client-header {
             padding: 12px 15px;
             display: flex;
@@ -432,7 +434,6 @@
             gap: 8px;
         }
 
-        /* سهم يوضح إمكانية الفتح */
         .arrow-icon {
             font-size: 0.8rem;
             color: var(--text-muted);
@@ -443,7 +444,6 @@
             transform: rotate(180deg);
         }
 
-        /* الجزء المخفي الذي يظهر عند الضغط فقط */
         .client-details {
             max-height: 0;
             overflow: hidden;
@@ -453,7 +453,7 @@
         }
 
         .client-item.open .client-details {
-            max-height: 500px; /* يعطي مساحة للتمدد */
+            max-height: 650px;
             border-top-color: var(--border-color);
         }
 
@@ -480,7 +480,6 @@
             font-weight: 700;
         }
 
-        /* شارات ملونة */
         .badge {
             display: inline-block;
             padding: 3px 8px;
@@ -508,7 +507,6 @@
         .session-type-katb { background-color: rgba(33, 150, 243, 0.15); color: #64b5f6; border-color: rgba(33, 150, 243, 0.3); }
         .session-type-other { background-color: rgba(158, 158, 158, 0.15); color: #e0e0e0; border-color: rgba(158, 158, 158, 0.3); }
 
-        /* أزرار العمليات داخل التفاصيل */
         .action-container {
             grid-column: span 2;
             display: flex;
@@ -516,10 +514,12 @@
             margin-top: 8px;
             border-top: 1px solid var(--border-color);
             padding-top: 10px;
+            flex-wrap: wrap;
         }
 
         .btn-action {
             flex: 1;
+            min-width: 100px;
             padding: 8px;
             border: none;
             border-radius: 6px;
@@ -535,15 +535,20 @@
             color: var(--warning);
             border: 1px solid var(--warning);
         }
-
         .btn-edit:hover { background-color: var(--warning); color: #000; }
+
+        .btn-receipt {
+            background-color: rgba(3, 218, 198, 0.12);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+        .btn-receipt:hover { background-color: var(--accent); color: #000; }
 
         .btn-delete {
             background-color: rgba(244, 67, 54, 0.12);
             color: var(--danger);
             border: 1px solid var(--danger);
         }
-
         .btn-delete:hover { background-color: var(--danger); color: #fff; }
 
         .status-message {
@@ -552,6 +557,80 @@
             color: var(--text-muted);
             font-size: 1rem;
         }
+
+        /* --- تصميم قالب الإيصال المخفي لتوليد الصورة --- */
+        #receiptWrapper {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            width: 450px;
+            background-color: #ffffff;
+            color: #222222;
+            font-family: 'Cairo', sans-serif;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            direction: rtl;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px dashed #cccccc;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .receipt-header h2 {
+            font-size: 1.6rem;
+            color: #111111;
+            margin-bottom: 4px;
+        }
+
+        .receipt-header p {
+            font-size: 0.85rem;
+            color: #666666;
+        }
+
+        .receipt-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #eeeeee;
+            font-size: 0.95rem;
+        }
+
+        .receipt-row .r-label {
+            color: #555555;
+            font-weight: 600;
+        }
+
+        .receipt-row .r-val {
+            color: #111111;
+            font-weight: 700;
+        }
+
+        .receipt-total-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .receipt-footer {
+            text-align: center;
+            border-top: 2px dashed #cccccc;
+            padding-top: 15px;
+            font-size: 0.8rem;
+            color: #777777;
+        }
     </style>
 </head>
 <body>
@@ -559,7 +638,7 @@
     <div class="container">
         <!-- لوحة علوية للبرنامج -->
         <header>
-            <h1 id="appHeaderTitle">برنامج إدارة الحجوزات 📸</h1>
+            <h1 id="appHeaderTitle">edit 📸</h1>
             <p id="appHeaderSubtitle">نظام ذكي محلي لحفظ وتنظيم المواعيد على جهازك مباشرة</p>
         </header>
 
@@ -608,6 +687,15 @@
                     <div class="form-group" id="customSessionGroup" style="display: none;">
                         <label for="customSessionText">اكتب نوع السيشن المخصص</label>
                         <input type="text" id="customSessionText" class="form-control" placeholder="سيشن تخرج، عيد ميلاد، تصوير شخصي...">
+                    </div>
+
+                    <!-- خانة نشر السيشن على السوشيال ميديا -->
+                    <div class="form-group">
+                        <label for="socialMediaStatus">هل السيشن سوف يتم تنزيله سوشيال ميديا أم لا؟</label>
+                        <select id="socialMediaStatus" class="form-control" required>
+                            <option value="نعم">نعم (سيتم النشر)</option>
+                            <option value="لا">لا (بدون نشر)</option>
+                        </select>
                     </div>
 
                     <div class="form-row-2">
@@ -675,7 +763,7 @@
                 </div>
             </div>
 
-            <!-- لوحة النسخ الاحتياطي (هامة جداً للعمل الأوفلاين) -->
+            <!-- لوحة النسخ الاحتياطي -->
             <div class="backup-section">
                 <button class="backup-btn" onclick="exportData()">📤 حفظ نسخة احتياطية من البيانات</button>
                 <button class="backup-btn" onclick="document.getElementById('importFile').click()">📥 استعادة نسخة احتياطية</button>
@@ -708,9 +796,64 @@
 
     </div>
 
-    <!-- كود التشغيل أوفلاين (LocalStorage) بالكامل -->
+    <!-- قالب الإيصال المخفي لتوليد صورة JPG -->
+    <div id="receiptWrapper">
+        <div class="receipt-header">
+            <h2>إيصال حجز وتفاصيل الاتفاق 📸</h2>
+            <p>edit</p>
+        </div>
+        <div class="receipt-body">
+            <div class="receipt-row">
+                <span class="r-label">اسم العميل:</span>
+                <span class="r-val" id="rClientName">---</span>
+            </div>
+            <div class="receipt-row">
+                <span class="r-label">رقم الهاتف:</span>
+                <span class="r-val" id="rClientPhone" style="direction: ltr;">---</span>
+            </div>
+            <div class="receipt-row">
+                <span class="r-label">نوع جلسة التصوير:</span>
+                <span class="r-val" id="rSessionType">---</span>
+            </div>
+            <div class="receipt-row">
+                <span class="r-label">تنزيل سوشيال ميديا:</span>
+                <span class="r-val" id="rSocialMedia">---</span>
+            </div>
+            <div class="receipt-row">
+                <span class="r-label">موعد المناسبة:</span>
+                <span class="r-val" id="rDeliveryDate">---</span>
+            </div>
+            <div class="receipt-row">
+                <span class="r-label">حالة التسليم:</span>
+                <span class="r-val" id="rDeliveryStatus">---</span>
+            </div>
+            <div class="receipt-total-box">
+                <div class="receipt-row" style="border: none; padding: 2px 0;">
+                    <span class="r-label">المبلغ المتفق عليه:</span>
+                    <span class="r-val" id="rTotalAmount">0 ج.م</span>
+                </div>
+                <div class="receipt-row" style="border: none; padding: 2px 0;">
+                    <span class="r-label">المبلغ المدفوع (المقدم):</span>
+                    <span class="r-val" id="rPaidAmount" style="color: #2e7d32;">0 ج.م</span>
+                </div>
+                <div class="receipt-row" style="border: none; padding: 2px 0; margin-top: 6px; border-top: 1px dashed #dddddd; padding-top: 6px;">
+                    <span class="r-label">المبلغ المتبقي:</span>
+                    <span class="r-val" id="rRemainingAmount" style="color: #c62828;">0 ج.م</span>
+                </div>
+            </div>
+            <div class="receipt-row" style="flex-direction: column; gap: 4px; border: none; background: #fafafa; padding: 10px; border-radius: 6px;">
+                <span class="r-label">ملاحظات ومكان السيشن:</span>
+                <span class="r-val" id="rNotes" style="font-weight: normal; font-size: 0.85rem; color: #444444;">---</span>
+            </div>
+        </div>
+        <div class="receipt-footer">
+            <p>شكراً لثقتكم بنا | تم إصدار هذا الإيصال آلياً من نظام الحجوزات</p>
+            <p id="rIssueDate" style="font-size: 0.7rem; margin-top: 4px; color: #999999;"></p>
+        </div>
+    </div>
+
+    <!-- كود التشغيل أوفلاين (LocalStorage) وتوليد إيصال JPG -->
     <script>
-        // عناصر الواجهة
         const clientForm = document.getElementById('clientForm');
         const clientIdInput = document.getElementById('clientId');
         const clientNameInput = document.getElementById('clientName');
@@ -718,6 +861,7 @@
         const sessionTypeSelect = document.getElementById('sessionType');
         const customSessionGroup = document.getElementById('customSessionGroup');
         const customSessionTextInput = document.getElementById('customSessionText');
+        const socialMediaStatusSelect = document.getElementById('socialMediaStatus');
         const totalAmountInput = document.getElementById('totalAmount');
         const paidAmountInput = document.getElementById('paidAmount');
         const remainingAmountInput = document.getElementById('remainingAmount');
@@ -741,7 +885,6 @@
         let isEditMode = false;
         let currentFilter = 'all';
 
-        // التنقل بين التبويبات
         window.switchTab = function(tabId, btn) {
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
@@ -785,7 +928,6 @@
         totalAmountInput.addEventListener('input', calculateRemaining);
         paidAmountInput.addEventListener('input', calculateRemaining);
 
-        // تحميل البيانات من الـ LocalStorage أول ما البرنامج يفتح
         function loadLocalData() {
             try {
                 const savedData = localStorage.getItem('local_bookings_data');
@@ -795,7 +937,6 @@
                     allClients = [];
                 }
                 
-                // ترتيب الحجوزات: الأقدم تاريخاً يظهر أولاً
                 allClients.sort((a, b) => new Date(a.deliveryDate) - new Date(b.deliveryDate));
 
                 updateDashboard(allClients);
@@ -806,7 +947,6 @@
             }
         }
 
-        // حفظ البيانات في الـ LocalStorage
         function saveLocalData() {
             localStorage.setItem('local_bookings_data', JSON.stringify(allClients));
             updateDashboard(allClients);
@@ -837,7 +977,6 @@
             progressPercentage.textContent = `${paidPercent}% من الإجمالي (${totalBudgetSum.toLocaleString('ar-EG')} ج.م)`;
         }
 
-        // دالة بناء قائمة العملاء
         function renderClients(dataToRender) {
             clientsListContainer.innerHTML = '';
             
@@ -900,6 +1039,10 @@
                                 <div class="detail-value"><span class="session-badge ${sessionClass}">${displaySessionType || 'غير محدد'}</span></div>
                             </div>
                             <div>
+                                <div class="detail-label">تنزيل سوشيال ميديا:</div>
+                                <div class="detail-value" style="color: ${client.socialMedia === 'نعم' ? 'var(--success)' : 'var(--danger)'};">${client.socialMedia || 'نعم'}</div>
+                            </div>
+                            <div>
                                 <div class="detail-label">الحساب الكلي:</div>
                                 <div class="detail-value">${client.total} ج.م</div>
                             </div>
@@ -922,6 +1065,7 @@
                                 <div class="detail-value" style="font-weight: normal; color: var(--text-muted);">${client.notes || 'لا توجد ملاحظات.'}</div>
                             </div>
                             <div class="action-container">
+                                <button class="btn-action btn-receipt" data-id="${client.id}">🧾 تحميل الإيصال JPG</button>
                                 <button class="btn-action btn-edit" data-id="${client.id}">⚙️ تعديل البيانات</button>
                                 <button class="btn-action btn-delete" data-id="${client.id}">🗑️ حذف الحجز</button>
                             </div>
@@ -929,7 +1073,6 @@
                     </div>
                 `;
 
-                // حدث الفتح والغلق عند الضغط
                 const header = clientItem.querySelector('.client-header');
                 header.addEventListener('click', () => {
                     const isOpen = clientItem.classList.contains('open');
@@ -946,7 +1089,12 @@
                 clientsListContainer.appendChild(clientItem);
             });
 
-            // ربط أزرار التعديل والحذف
+            document.querySelectorAll('.btn-receipt').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    downloadClientReceipt(btn.dataset.id);
+                });
+            });
             document.querySelectorAll('.btn-edit').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -961,7 +1109,54 @@
             });
         }
 
-        // حفظ / تعديل حجز
+        // دالة توليد وتنزيل إيصال الحجز كصورة JPG
+        window.downloadClientReceipt = function(id) {
+            const client = allClients.find(c => c.id === id);
+            if (!client) return;
+
+            // تعبئة بيانات الإيصال المخفي
+            document.getElementById('rClientName').textContent = client.name;
+            document.getElementById('rClientPhone').textContent = client.phone;
+            
+            const displaySessionType = client.sessionType === 'أخرى' ? client.customSessionType : client.sessionType;
+            document.getElementById('rSessionType').textContent = displaySessionType || 'غير محدد';
+            document.getElementById('rSocialMedia').textContent = client.socialMedia || 'نعم';
+            
+            const formattedDate = new Date(client.deliveryDate).toLocaleString('ar-EG', {
+                year: 'numeric', month: 'numeric', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+            document.getElementById('rDeliveryDate').textContent = formattedDate;
+            document.getElementById('rDeliveryStatus').textContent = client.status;
+            document.getElementById('rTotalAmount').textContent = `${client.total} ج.م`;
+            document.getElementById('rPaidAmount').textContent = `${client.paid} ج.م`;
+            document.getElementById('rRemainingAmount').textContent = `${client.remaining} ج.م`;
+            document.getElementById('rNotes').textContent = client.notes || 'لا توجد ملاحظات إضافية.';
+            
+            const nowStr = new Date().toLocaleString('ar-EG');
+            document.getElementById('rIssueDate').textContent = `تاريخ إصدار الإيصال: ${nowStr}`;
+
+            const receiptElement = document.getElementById('receiptWrapper');
+
+            // استخدام html2canvas لتحويل العنصر إلى صورة JPG وتنزيلها
+            html2canvas(receiptElement, {
+                scale: 2, // جودة عالية وواضحة جداً
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
+                const imageURL = canvas.toDataURL('image/jpeg', 0.95);
+                const downloadLink = document.createElement('a');
+                downloadLink.href = imageURL;
+                downloadLink.download = `إيصال_حجز_${client.name.replace(/\s+/g, '_')}.jpg`;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                downloadLink.remove();
+            }).catch(err => {
+                console.error("خطأ أثناء توليد صورة الإيصال:", err);
+                alert("حدث خطأ أثناء محاولة حفظ الإيصال كصورة.");
+            });
+        };
+
         clientForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -971,6 +1166,7 @@
                 phone: clientPhoneInput.value.trim(),
                 sessionType: sessionTypeSelect.value,
                 customSessionType: sessionTypeSelect.value === 'أخرى' ? customSessionTextInput.value.trim() : '',
+                socialMedia: socialMediaStatusSelect.value,
                 total: parseFloat(totalAmountInput.value) || 0,
                 paid: parseFloat(paidAmountInput.value) || 0,
                 remaining: parseFloat(remainingAmountInput.value) || 0,
@@ -981,24 +1177,21 @@
             };
 
             if (isEditMode) {
-                // استبدال القديم بالجديد
                 allClients = allClients.map(c => c.id === clientData.id ? clientData : c);
                 resetForm();
             } else {
-                // إضافة جديد
                 allClients.push(clientData);
             }
 
-            // ترتيب وفرز
             allClients.sort((a, b) => new Date(a.deliveryDate) - new Date(b.deliveryDate));
 
             saveLocalData();
             clientForm.reset();
             customSessionGroup.style.display = 'none';
             customSessionTextInput.removeAttribute('required');
+            socialMediaStatusSelect.value = 'نعم';
             calculateRemaining();
 
-            // التنقل لجدول الحجوزات
             switchTab('bookings-tab', document.getElementById('listTabBtn'));
         });
 
@@ -1028,6 +1221,7 @@
                 customSessionTextInput.removeAttribute('required');
             }
 
+            socialMediaStatusSelect.value = client.socialMedia || 'نعم';
             totalAmountInput.value = client.total;
             paidAmountInput.value = client.paid;
             remainingAmountInput.value = client.remaining;
@@ -1048,9 +1242,10 @@
             submitBtn.style.color = "#000";
             cancelEditBtn.style.display = 'none';
             clientForm.reset();
-            clientIdInput.value = '';
+            clientIdInput.value = `id_${Date.now()}`;
             customSessionGroup.style.display = 'none';
             customSessionTextInput.removeAttribute('required');
+            socialMediaStatusSelect.value = 'نعم';
             calculateRemaining();
         }
 
@@ -1068,9 +1263,6 @@
             }
         }
 
-        // ==========================================
-        // وظائف تصدير واستعادة البيانات (النسخ الاحتياطي)
-        // ==========================================
         window.exportData = function() {
             if (allClients.length === 0) {
                 alert("لا توجد حجوزات لحفظها حالياً!");
@@ -1096,7 +1288,6 @@
                     if (Array.isArray(importedData)) {
                         const confirmImport = confirm(`⚠️ سيتم استيراد ${importedData.length} حجز ودمجهم مع الحجوزات الحالية على هذا الجهاز. هل تود الاستمرار؟`);
                         if (confirmImport) {
-                            // دمج مع منع تكرار نفس المعرّف (ID)
                             const existingIds = new Set(allClients.map(c => c.id));
                             importedData.forEach(item => {
                                 if (!existingIds.has(item.id)) {
@@ -1122,7 +1313,6 @@
             renderClients(allClients);
         });
 
-        // تشغيل التحميل عند فتح التطبيق
         window.onload = loadLocalData;
     </script>
 </body>
